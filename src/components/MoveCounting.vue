@@ -36,7 +36,7 @@ export default {
             startts: 0,
             now: 0,
             moves: [] as number[],
-            countdown: ' ',
+            countdown: '',
             cleanup: () => {},
         };
     },
@@ -61,12 +61,16 @@ export default {
             onFrame();
         },
         handleEnd() {
+            const confirmed = window.confirm('确定结束？');
+            if (!confirmed) return;
             this.cleanup();
-            this.startts = 0;
             const endts = Date.now();
             appendLocalStore([
                 { name: this.name, startts: this.startts, endts, moves: this.moves },
             ]);
+            this.startts = 0;
+            this.moves = [];
+            this.countdown = '';
         },
         handleClick() {
             this.moves.push(Date.now());

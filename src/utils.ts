@@ -12,8 +12,8 @@ export const getRealMoves = (moves: number[]) =>
         (acc: number[], cur) =>
             !acc.length
                 ? [cur]
-                : // 3分钟
-                cur - acc[acc.length - 1] >= 3 * 60 * 1000
+                : // 5分钟
+                cur - acc[acc.length - 1] >= 5 * 60 * 1000
                 ? acc.concat(cur)
                 : acc,
         [],
