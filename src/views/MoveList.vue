@@ -1,16 +1,16 @@
 <template>
     <div>
         <h1>我的记录</h1>
-        <div v-for="{ date, babies } in displayList" :key="date">
+        <div v-for="{ date, babies } in displayInfo" :key="date">
             <h2 class="date">{{ date }}</h2>
-            <div v-for="{ name, detail, estimate } in babies" :key="name">
+            <div v-for="{ name, details, estimate } in babies" :key="name">
                 <h3 class="name">
                     <span>{{ name }}</span>
                     <span class="estimate">12小时推算: {{ estimate }}</span>
                 </h3>
                 <div
                     class="detail"
-                    v-for="{ time, duration, moveTimes, realMoveTimes } in detail"
+                    v-for="{ time, duration, moveTimes, realMoveTimes } in details"
                     :key="time"
                 >
                     <div class="detail-item">
@@ -31,79 +31,16 @@
     </div>
 </template>
 <script lang="ts">
-import type { LocalData } from '../interface';
-import { getLocalStore, getRealMoves } from '../utils';
-import dayjs from 'dayjs';
+import type { DisplayInfo } from '../interface';
+import { getLocalStore, getDisplayInfo } from '../utils';
 export default {
     data() {
         return {
-            localData: [] as LocalData,
+            displayInfo: [] as DisplayInfo,
         };
     },
-    computed: {
-        displayList() {
-            return Object.entries(
-                this.localData.reduce(
-                    (acc, cur) => {
-                        const date = dayjs(cur.startts).format('YYYY-MM-DD');
-                        return {
-                            ...acc,
-                            [date]: (acc[date] || []).concat(cur),
-                        };
-                    },
-                    {} as Record<string, LocalData>,
-                ),
-            )
-                .sort(([dateA], [dateB]) => new Date(dateB).getTime() - new Date(dateA).getTime())
-                .map(([date, localData]) => {
-                    const babies = Object.entries(
-                        localData.reduce(
-                            (acc, cur) => ({
-                                ...acc,
-                                [cur.name]: (acc[cur.name] || []).concat(cur),
-                            }),
-                            {} as Record<string, LocalData>,
-                        ),
-                    )
-                        .sort()
-                        .map(([name, localData]) => {
-                            const detail = localData.map(({ startts, endts, moves }) => {
-                                return {
-                                    time: `${dayjs(startts).format('HH:mm')}-${dayjs(endts).format(
-                                        'HH:mm',
-                                    )}`,
-                                    duration: dayjs(endts).diff(startts, 'minute'),
-                                    moveTimes: moves.length,
-                                    realMoveTimes: getRealMoves(moves).length,
-                                };
-                            });
-                            const totalDuration = detail
-                                .map(({ duration }) => duration)
-                                .reduce((acc, cur) => acc + cur);
-                            return {
-                                name,
-                                detail,
-                                estimate:
-                                    totalDuration > 165 /** 3小时，误差15分钟以内 */
-                                        ? Math.round(
-                                              (detail
-                                                  .map(({ realMoveTimes }) => realMoveTimes)
-                                                  .reduce((acc, cur) => acc + cur) /
-                                                  totalDuration) *
-                                                  1440 /** 天分钟数 */,
-                                          )
-                                        : 0,
-                            };
-                        });
-                    return {
-                        date,
-                        babies,
-                    };
-                });
-        },
-    },
     created() {
-        this.localData = getLocalStore();
+        this.displayInfo = getDisplayInfo(getLocalStore());
     },
 };
 </script>
