@@ -6,6 +6,7 @@
 </template>
 <script lang="ts">
 import MoveCounting from '../components/MoveCounting.vue';
+// @ts-ignore
 import NoSleep from '../../pkgs/nosleep.js';
 const noSleep = new NoSleep();
 export default {
