@@ -5,6 +5,11 @@ export type LocalData = {
     moves: number[];
 }[];
 
+export type TempData = {
+    startts?: number;
+    moves?: number[];
+}
+
 export type DisplayDetail = {
     /**
      * 开始时间

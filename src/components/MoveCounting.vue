@@ -32,7 +32,13 @@
 <script lang="ts">
 import type { PropType } from 'vue';
 import dayjs from 'dayjs';
-import { appendLocalStore, getRealMoves } from '../utils';
+import {
+    appendLocalStore,
+    getRealMoves,
+    getTempStore,
+    setTempStore,
+    removeTempStore,
+} from '../utils';
 export default {
     props: {
         name: {
@@ -58,6 +64,7 @@ export default {
         handleStart() {
             this.startts = Date.now();
             this.startFrame();
+            setTempStore(this.name, this);
         },
         startFrame() {
             const onFrame = () => {
@@ -66,10 +73,10 @@ export default {
                 // 1小时
                 if (elapsed >= 3600 * 1000) {
                     this.finished = true;
-                    console.log('>>>');
                     appendLocalStore([
                         { name: this.name, startts: this.startts, endts: now, moves: this.moves },
                     ]);
+                    removeTempStore(this.name);
                     return;
                 }
                 this.countdown = dayjs(elapsed).format('mm:ss:SSS').slice(0, -1);
@@ -90,7 +97,21 @@ export default {
         },
         handleClick() {
             this.moves.push(Date.now());
+            setTempStore(this.name, this);
         },
+    },
+    // mounted before activated
+    mounted() {
+        const { startts = 0, moves = [] } = getTempStore(this.name);
+        // 有临时记录
+        // 未完成
+        if (startts && Date.now() - startts < 3600 * 1000) {
+            this.startts = startts;
+            this.moves = moves;
+            this.startFrame();
+            return;
+        }
+        removeTempStore(this.name);
     },
     deactivated() {
         this.cleanup();
