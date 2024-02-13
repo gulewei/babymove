@@ -53,46 +53,52 @@ export default {
                     },
                     {} as Record<string, LocalData>,
                 ),
-            ).map(([date, localData]) => {
-                const babies = Object.entries(
-                    localData.reduce(
-                        (acc, cur) => ({
-                            ...acc,
-                            [cur.name]: (acc[cur.name] || []).concat(cur),
-                        }),
-                        {} as Record<string, LocalData>,
-                    ),
-                ).map(([name, localData]) => {
-                    const detail = localData.map(({ startts, endts, moves }) => {
-                        const startDate = dayjs(startts);
-                        return {
-                            time: `${startDate.format('HH:mm')}-${dayjs(endts).format('HH:mm')}`,
-                            duration: Math.ceil(startDate.diff(endts, 'minute', true) * -1),
-                            moveTimes: moves.length,
-                            realMoveTimes: getRealMoves(moves).length,
-                        };
-                    });
-                    const totalDuration = detail
-                        .map(({ duration }) => duration)
-                        .reduce((acc, cur) => acc + cur);
+            )
+                .sort(([dateA], [dateB]) => new Date(dateB).getTime() - new Date(dateA).getTime())
+                .map(([date, localData]) => {
+                    const babies = Object.entries(
+                        localData.reduce(
+                            (acc, cur) => ({
+                                ...acc,
+                                [cur.name]: (acc[cur.name] || []).concat(cur),
+                            }),
+                            {} as Record<string, LocalData>,
+                        ),
+                    )
+                        .sort()
+                        .map(([name, localData]) => {
+                            const detail = localData.map(({ startts, endts, moves }) => {
+                                const startDate = dayjs(startts);
+                                return {
+                                    time: `${startDate.format('HH:mm')}-${dayjs(endts).format(
+                                        'HH:mm',
+                                    )}`,
+                                    duration: Math.ceil(startDate.diff(endts, 'minute', true) * -1),
+                                    moveTimes: moves.length,
+                                    realMoveTimes: getRealMoves(moves).length,
+                                };
+                            });
+                            const totalDuration = detail
+                                .map(({ duration }) => duration)
+                                .reduce((acc, cur) => acc + cur);
+                            return {
+                                name,
+                                detail,
+                                estimate:
+                                    totalDuration > 165 /** 3小时，误差15分钟以内 */
+                                        ? (detail
+                                              .map(({ realMoveTimes }) => realMoveTimes)
+                                              .reduce((acc, cur) => acc + cur) /
+                                              totalDuration) *
+                                          1440 /** 天分钟数 */
+                                        : 0,
+                            };
+                        });
                     return {
-                        name,
-                        detail,
-                        estimate:
-                            totalDuration > 165 /** 3小时，误差15分钟以内 */
-                                ? (detail
-                                      .map(({ realMoveTimes }) => realMoveTimes)
-                                      .reduce((acc, cur) => acc + cur) /
-                                      totalDuration) *
-                                  1440 /** 天分钟数 */
-                                : 0,
+                        date,
+                        babies,
                     };
                 });
-                return {
-                    date,
-                    babies,
-                };
-            });
         },
     },
     created() {
