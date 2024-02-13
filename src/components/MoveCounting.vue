@@ -68,6 +68,7 @@ export default {
         },
         startFrame() {
             const onFrame = () => {
+                if (!this.startts) return;
                 const now = Date.now();
                 const elapsed = now - this.startts;
                 // 1小时
@@ -94,6 +95,7 @@ export default {
             this.startts = 0;
             this.moves = [];
             this.countdown = '';
+            removeTempStore(this.name);
         },
         handleClick() {
             this.moves.push(Date.now());
