@@ -76,7 +76,7 @@ export function getDisplayInfo(localData: LocalData): DisplayInfo {
                                           .map(({ realMoveTimes }) => realMoveTimes)
                                           .reduce((acc, cur) => acc + cur) /
                                           totalDuration) *
-                                          1440 /** 天分钟数 */,
+                                          720 /** 12小时分钟数 */,
                                   )
                                 : 0,
                     };
