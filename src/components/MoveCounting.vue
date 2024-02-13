@@ -64,7 +64,7 @@ export default {
                 const now = Date.now();
                 const elapsed = now - this.startts;
                 // 1小时
-                if (elapsed >= 6 * 1000) {
+                if (elapsed >= 3600 * 1000) {
                     this.finished = true;
                     console.log('>>>');
                     appendLocalStore([
