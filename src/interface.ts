@@ -14,6 +14,7 @@ export type DisplayDetail = {
      * 持续时长(分钟)
      */
     duration: number;
+    moveTimes: number;
     /**
      * 有效胎动
      */

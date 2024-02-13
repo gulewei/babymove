@@ -5,7 +5,14 @@
                 <strong>{{ moves.length }}</strong>
                 <span>点击次数</span>
             </div>
-            <button class="clickbox-action" v-if="startts" @click="handleClick">{{ name }}</button>
+            <button
+                class="clickbox-action"
+                v-if="startts"
+                @click="handleClick"
+                :disabled="finished"
+            >
+                {{ name }}
+            </button>
             <button class="clickbox-action" v-else @click="handleStart">
                 开始<br />{{ name }}
             </button>
@@ -16,7 +23,9 @@
         </div>
         <div class="buttons">
             <div class="countdown">{{ countdown }}</div>
-            <button class="end" v-if="startts" @click="handleEnd">结束</button>
+            <button class="cancel" v-if="startts" @click="handleCancel" :disabled="finished">
+                {{ finished ? '已完成' : '取消' }}
+            </button>
         </div>
     </div>
 </template>
@@ -34,10 +43,10 @@ export default {
     data() {
         return {
             startts: 0,
-            now: 0,
             moves: [] as number[],
             countdown: '',
             cleanup: () => {},
+            finished: false,
         };
     },
     computed: {
@@ -48,11 +57,22 @@ export default {
     methods: {
         handleStart() {
             this.startts = Date.now();
-            this.countdown = ' ';
+            this.startFrame();
+        },
+        startFrame() {
             const onFrame = () => {
-                this.countdown = dayjs(Date.now() - this.startts)
-                    .format('mm:ss:SSS')
-                    .slice(0, -1);
+                const now = Date.now();
+                const elapsed = now - this.startts;
+                // 1小时
+                if (elapsed >= 6 * 1000) {
+                    this.finished = true;
+                    console.log('>>>');
+                    appendLocalStore([
+                        { name: this.name, startts: this.startts, endts: now, moves: this.moves },
+                    ]);
+                    return;
+                }
+                this.countdown = dayjs(elapsed).format('mm:ss:SSS').slice(0, -1);
                 const raf = requestAnimationFrame(onFrame);
                 this.cleanup = () => {
                     cancelAnimationFrame(raf);
@@ -60,14 +80,10 @@ export default {
             };
             onFrame();
         },
-        handleEnd() {
-            const confirmed = window.confirm('确定结束？');
+        handleCancel() {
+            const confirmed = window.confirm('确定取消？');
             if (!confirmed) return;
             this.cleanup();
-            const endts = Date.now();
-            appendLocalStore([
-                { name: this.name, startts: this.startts, endts, moves: this.moves },
-            ]);
             this.startts = 0;
             this.moves = [];
             this.countdown = '';
@@ -76,8 +92,13 @@ export default {
             this.moves.push(Date.now());
         },
     },
-    beforeUnmount() {
+    deactivated() {
         this.cleanup();
+    },
+    activated() {
+        if (this.startts && !this.finished) {
+            this.startFrame();
+        }
     },
 };
 </script>
@@ -103,10 +124,10 @@ export default {
     justify-content: center;
     align-items: center;
     color: #fff;
-    background: linear-gradient(140deg,#ff7b6c,#ff5f66);
+    background: linear-gradient(140deg, #ff7b6c, #ff5f66);
 }
 .clickbox-action:active {
-    opacity: .8;
+    opacity: 0.8;
 }
 
 .clickbox-time {
@@ -137,7 +158,7 @@ export default {
     color: #b4b4b4;
 }
 
-.end {
+.cancel {
     font-size: 18px;
     line-height: 2em;
     border: 0;
