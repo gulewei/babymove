@@ -128,7 +128,7 @@ h1 {
 
 .detail {
     display: flex;
-    margin-bottom: 14px;
+    margin-bottom: 4px;
 }
 
 .detail-item {
