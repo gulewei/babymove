@@ -68,12 +68,11 @@ export default {
                         .sort()
                         .map(([name, localData]) => {
                             const detail = localData.map(({ startts, endts, moves }) => {
-                                const startDate = dayjs(startts);
                                 return {
-                                    time: `${startDate.format('HH:mm')}-${dayjs(endts).format(
+                                    time: `${dayjs(startts).format('HH:mm')}-${dayjs(endts).format(
                                         'HH:mm',
                                     )}`,
-                                    duration: Math.ceil(startDate.diff(endts, 'minute', true) * -1),
+                                    duration: dayjs(endts).diff(startts, 'minute'),
                                     moveTimes: moves.length,
                                     realMoveTimes: getRealMoves(moves).length,
                                 };
@@ -86,11 +85,13 @@ export default {
                                 detail,
                                 estimate:
                                     totalDuration > 165 /** 3小时，误差15分钟以内 */
-                                        ? (detail
-                                              .map(({ realMoveTimes }) => realMoveTimes)
-                                              .reduce((acc, cur) => acc + cur) /
-                                              totalDuration) *
-                                          1440 /** 天分钟数 */
+                                        ? Math.round(
+                                              (detail
+                                                  .map(({ realMoveTimes }) => realMoveTimes)
+                                                  .reduce((acc, cur) => acc + cur) /
+                                                  totalDuration) *
+                                                  1440 /** 天分钟数 */,
+                                          )
                                         : 0,
                             };
                         });
@@ -117,8 +118,8 @@ h1 {
 .name {
     display: flex;
     justify-content: space-between;
-    /* font-weight: normal; */
-    font-size: 16px;
+    font-weight: normal;
+    font-size: 14px;
     margin: 12px 12px;
 }
 .estimate {
@@ -127,6 +128,7 @@ h1 {
 
 .detail {
     display: flex;
+    margin-bottom: 14px;
 }
 
 .detail-item {
@@ -137,12 +139,9 @@ h1 {
     align-items: center;
 }
 
-.detail-item:not(:last-child) {
-    margin-bottom: 14px;
-}
-
 .detail-item strong {
     font-weight: normal;
+    font-size: 14px;
 }
 
 .detail-item span {
