@@ -16,7 +16,7 @@ export default {
     },
     data() {
         return {
-            coutings: ['大崽', '小崽'],
+            coutings: ['大胖崽', '小胖崽'],
         };
     },
     activated() {
