@@ -1,6 +1,11 @@
 <template>
     <div>
-        <MoveCounting v-for="name in coutings" :key="name" :name="name"></MoveCounting>
+        <MoveCounting
+            v-for="{ name, displayName } in babies"
+            :key="name"
+            :name="name"
+            :display-name="displayName"
+        ></MoveCounting>
         <RouterLink to="/list">查看记录</RouterLink>
     </div>
 </template>
@@ -8,6 +13,7 @@
 import { getCurrentInstance } from 'vue';
 import MoveCounting from '../components/MoveCounting.vue';
 import NoSleep from 'nosleep.js';
+import { myBabies } from '../utils'
 const noSleep = new NoSleep();
 export default {
     name: 'BabyMove',
@@ -16,7 +22,7 @@ export default {
     },
     data() {
         return {
-            coutings: ['大胖崽', '小胖崽'],
+            babies: myBabies,
         };
     },
     activated() {

@@ -27,18 +27,36 @@ export const getRealMoves = (moves: number[]) =>
         [],
     );
 
+export const myBabies = [
+    {
+        name: '大崽',
+        displayName: '大胖崽',
+    },
+    {
+        name: '小崽',
+        displayName: '小胖崽',
+    },
+];
+
+const display = (name: string) => myBabies.find((baby) => baby.name === name)?.displayName || '';
+
 export function getDisplayInfo(localData: LocalData): DisplayInfo {
     return Object.entries(
-        localData.reduce(
-            (acc, cur) => {
-                const date = dayjs(cur.startts).format('YYYY-MM-DD');
-                return {
-                    ...acc,
-                    [date]: (acc[date] || []).concat(cur),
-                };
-            },
-            {} as Record<string, LocalData>,
-        ),
+        localData
+            .map((baby) => ({
+                ...baby,
+                name: display(baby.name),
+            }))
+            .reduce(
+                (acc, cur) => {
+                    const date = dayjs(cur.startts).format('YYYY-MM-DD');
+                    return {
+                        ...acc,
+                        [date]: (acc[date] || []).concat(cur),
+                    };
+                },
+                {} as Record<string, LocalData>,
+            ),
     )
         .sort(([dateA], [dateB]) => new Date(dateB).getTime() - new Date(dateA).getTime())
         .map(([date, localData]) => {

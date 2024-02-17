@@ -11,10 +11,10 @@
                 @click="handleClick"
                 :disabled="finished"
             >
-                {{ name }}
+                {{ displayName }}
             </button>
             <button class="clickbox-action" v-else @click="handleStart">
-                开始<br />{{ name }}
+                开始<br />{{ displayName }}
             </button>
             <div class="clickbox-time">
                 <strong>{{ realMoves.length }}</strong>
@@ -45,6 +45,10 @@ export default {
             type: String as PropType<string>,
             default: '',
         },
+        displayName: {
+            type: String as PropType<string>,
+            default: '',
+        }
     },
     data() {
         return {
