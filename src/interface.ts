@@ -1,9 +1,10 @@
-export type LocalData = {
+export type LocalDataItem = {
     name: string;
     startts: number;
     endts: number;
     moves: number[];
-}[];
+}
+export type LocalData = LocalDataItem[];
 
 export type TempData = {
     startts?: number;

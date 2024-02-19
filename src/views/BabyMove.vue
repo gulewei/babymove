@@ -13,7 +13,7 @@
 import { getCurrentInstance } from 'vue';
 import MoveCounting from '../components/MoveCounting.vue';
 import NoSleep from 'nosleep.js';
-import { myBabies } from '../utils'
+import { myBabies, backupLocalStore } from '../utils';
 const noSleep = new NoSleep();
 export default {
     name: 'BabyMove',
@@ -24,6 +24,9 @@ export default {
         return {
             babies: myBabies,
         };
+    },
+    mounted() {
+        backupLocalStore();
     },
     activated() {
         // Enable wake lock.

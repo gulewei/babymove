@@ -1,4 +1,4 @@
-import type { DisplayInfo, LocalData, TempData } from './interface';
+import type { DisplayInfo, LocalData, LocalDataItem, TempData } from './interface';
 import dayjs from 'dayjs';
 
 const STORAGE_KEY = 'babymove_storage';
@@ -7,6 +7,20 @@ export const getLocalStore = () =>
 export const setLocalStore = (store: LocalData) =>
     localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
 export const appendLocalStore = (store: LocalData) => setLocalStore(getLocalStore().concat(store));
+export const saveLocalStoreItem = (item: LocalDataItem) => {
+    const store = getLocalStore();
+    const index = store.findIndex(
+        (data) => data.name === item.name && data.startts === item.startts,
+    );
+    if (index > -1) {
+        store.push(item);
+    } else {
+        store[index] = item;
+    }
+    setLocalStore(store);
+};
+export const backupLocalStore = () =>
+    localStorage.setItem(`${STORAGE_KEY}_backup`, localStorage.getItem(STORAGE_KEY) || '[]');
 
 const TEMP_KEY = 'boaymove_temp';
 export const getTempStore = (name: string) =>
@@ -15,13 +29,18 @@ export const setTempStore = (name: string, { startts, moves }: TempData) =>
     localStorage.setItem(`${TEMP_KEY}_${name}`, JSON.stringify({ startts, moves }));
 export const removeTempStore = (name: string) => localStorage.removeItem(`${TEMP_KEY}_${name}`);
 
+/**
+ * 有效时间间隔（5分钟）
+ */
+export const INTERVAL = 5 * 60 * 1000;
+
 export const getRealMoves = (moves: number[]) =>
     moves.reduce(
         (acc: number[], cur) =>
             !acc.length
                 ? [cur]
                 : // 5分钟
-                cur - acc[acc.length - 1] >= 5 * 60 * 1000
+                cur - acc[acc.length - 1] >= INTERVAL
                 ? acc.concat(cur)
                 : acc,
         [],

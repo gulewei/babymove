@@ -8,7 +8,7 @@
             <button
                 class="clickbox-action"
                 v-if="startts"
-                @click="handleClick"
+                @click.prevent="handleClick"
                 :disabled="finished"
             >
                 {{ displayName }}
@@ -33,7 +33,7 @@
 import type { PropType } from 'vue';
 import dayjs from 'dayjs';
 import {
-    appendLocalStore,
+    saveLocalStoreItem,
     getRealMoves,
     getTempStore,
     setTempStore,
@@ -48,7 +48,7 @@ export default {
         displayName: {
             type: String as PropType<string>,
             default: '',
-        }
+        },
     },
     data() {
         return {
@@ -78,9 +78,12 @@ export default {
                 // 1小时
                 if (elapsed >= 3600 * 1000) {
                     this.finished = true;
-                    appendLocalStore([
-                        { name: this.name, startts: this.startts, endts: now, moves: this.moves },
-                    ]);
+                    saveLocalStoreItem({
+                        name: this.name,
+                        startts: this.startts,
+                        endts: now,
+                        moves: this.moves,
+                    });
                     removeTempStore(this.name);
                     return;
                 }
@@ -116,6 +119,15 @@ export default {
             this.moves = moves;
             this.startFrame();
             return;
+        }
+        // 已完成且有效
+        if (startts && getRealMoves(moves).length >= 5) {
+            saveLocalStoreItem({
+                name: this.name,
+                startts,
+                moves,
+                endts: moves[moves.length - 1],
+            });
         }
         removeTempStore(this.name);
     },
